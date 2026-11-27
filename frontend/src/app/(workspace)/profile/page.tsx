@@ -23,9 +23,14 @@ export default async function ProfilePage() {
   ];
 
   return (
-    <section className="m-2 rounded-xl bg-white p-3 shadow-sm sm:p-4">
-      <h1 className="mb-4 text-2xl font-semibold text-gray-900">Hồ sơ cá nhân</h1>
-      <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
+    <section
+      aria-labelledby="profile-title"
+      className="m-2 flex min-h-[calc(100%_-_1rem)] flex-col rounded-xl bg-white p-3 shadow-sm sm:p-4"
+    >
+      <h1 id="profile-title" className="mb-4 text-2xl font-semibold text-gray-900">
+        Hồ sơ cá nhân
+      </h1>
+      <div className="grid flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <div className="flex flex-col items-center rounded-lg border border-gray-200 px-4 py-6 text-center shadow-sm">
           <span
             aria-hidden="true"
@@ -37,7 +42,7 @@ export default async function ProfilePage() {
           <p className="mt-1 text-sm text-gray-600">{user.department}</p>
         </div>
 
-        <div className="min-w-0 space-y-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <section className="rounded-lg border border-gray-200 p-4 shadow-sm">
             <h2 className="border-b border-gray-200 pb-3 text-lg font-semibold">
               Thông tin cá nhân
@@ -52,7 +57,7 @@ export default async function ProfilePage() {
             </dl>
           </section>
 
-          <section className="rounded-lg border border-gray-200 p-4 shadow-sm">
+          <section className="rounded-lg border border-gray-200 p-4 shadow-sm lg:flex-1">
             <h2 className="border-b border-gray-200 pb-3 text-lg font-semibold">
               Thay đổi mật khẩu
             </h2>
