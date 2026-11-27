@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { ConnectionHistoryModule } from './connection-history/connection-history.module';
 import { ItemsModule } from './items/items.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ItemsModule } from './items/items.module';
     ItemsModule,
     AccessControlModule,
     ConnectionHistoryModule,
+    SettingsModule,
   ],
   controllers: [AppController],
 })

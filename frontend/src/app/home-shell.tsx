@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Bell, Boxes, ClipboardList, Info, LogOut, PackageCheck, Search, Unplug, User } from "lucide-react";
+import { Bell, Boxes, ClipboardList, Info, LogOut, PackageCheck, Search, Settings, Unplug, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -135,6 +135,15 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
                   <span className="text-xs text-gray-600">{subtitle}</span>
                 </Dropdown.Label>
                 <Dropdown.Separator className="my-1 h-px bg-gray-100" />
+                <Dropdown.Item asChild>
+                  <Link
+                    href="/setting"
+                    className="flex cursor-pointer items-center gap-2 rounded px-3 py-2 outline-none data-highlighted:bg-blue-50"
+                  >
+                    <Settings aria-hidden="true" size={16} />
+                    Cài đặt
+                  </Link>
+                </Dropdown.Item>
                 <Dropdown.Item asChild>
                   <Link
                     href="/profile"

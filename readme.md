@@ -73,3 +73,7 @@ Khi triển khai, đặt `ABOUT_API_REFERENCE_URL` trong môi trường frontend
 Lịch sử ghi nhận từng tab trong khu vực sau đăng nhập. Tab gửi tín hiệu mỗi 20 giây. Phiên ngắt kết nối được nối lại trong 90 giây, hoặc tối đa 120 giây kể từ tín hiệu cuối nếu backend chưa nhận được sự kiện ngắt. Thời lượng phiên tính từ lần mở đến mốc kết nối cuối hoặc lúc đăng xuất, tùy trạng thái.
 
 Tài khoản xem lịch sử của mình. Quyền `users.list` mở rộng phạm vi sang toàn bộ người dùng. Khi triển khai qua reverse proxy, cấu hình `TRUST_PROXY` theo chuỗi proxy tin cậy để backend nhận đúng IP thiết bị.
+
+## Cài đặt
+
+Mọi tài khoản đã đăng nhập đều có thể mở **Cài đặt** trong menu tài khoản để thêm người dùng và phòng ban.
