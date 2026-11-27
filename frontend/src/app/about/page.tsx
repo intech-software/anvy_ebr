@@ -22,6 +22,11 @@ function aboutUrl(value?: string) {
 
 export default function AboutPage() {
   const feedbackUrl = aboutUrl(process.env.ABOUT_FEEDBACK_URL);
+  const apiReferenceUrl =
+    aboutUrl(process.env.ABOUT_API_REFERENCE_URL) ??
+    (process.env.NODE_ENV === "development"
+      ? new URL("/api-docs", aboutUrl(process.env.AUTH_API_URL) ?? "http://localhost:3000").href
+      : null);
   const developer = process.env.ABOUT_DEVELOPER?.trim();
   const owner = process.env.ABOUT_COPYRIGHT_OWNER?.trim();
   const ageRating = process.env.ABOUT_AGE_RATING?.trim();
@@ -30,7 +35,7 @@ export default function AboutPage() {
     { label: "Privacy", href: aboutUrl(process.env.ABOUT_PRIVACY_URL) },
     {
       label: "api reference",
-      href: aboutUrl(process.env.ABOUT_API_REFERENCE_URL),
+      href: apiReferenceUrl,
       newTab: true,
     },
   ];

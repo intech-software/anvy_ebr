@@ -61,3 +61,9 @@ try {
 Người dùng nhận quyền qua các vai trò được gán. Các bảng `roles`, `permissions`, `user_roles` và `role_permissions` lưu vai trò, quyền và các liên kết tương ứng. Migration chỉ tạo cấu trúc bảng.
 
 Backend hỗ trợ `@RequireRoles(...)` và `@RequirePermissions(...)` trên controller hoặc handler. Người dùng phải đáp ứng tất cả yêu cầu đã khai báo ở cả hai cấp. Guard đọc quyền từ database khi xử lý yêu cầu để phản ánh thay đổi gán quyền.
+
+## Tài liệu API
+
+Swagger UI chạy tại `http://localhost:3000/api-docs`. Bản OpenAPI có tại `/api-docs-json` và `/api-docs-yaml`. Đăng nhập qua `POST /auth/login` rồi nhập `accessToken` vào nút **Authorize** để thử các API yêu cầu xác thực.
+
+Khi triển khai, đặt `ABOUT_API_REFERENCE_URL` trong môi trường frontend thành URL công khai của Swagger UI. Có thể đặt `SWAGGER_API_URL` nếu Swagger cần gửi yêu cầu đến một địa chỉ API khác.
