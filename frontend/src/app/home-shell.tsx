@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Bell, Boxes, ClipboardList, Info, LogOut, PackageCheck, Search, User } from "lucide-react";
+import { Bell, Boxes, ClipboardList, Info, LogOut, PackageCheck, Search, Unplug, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,6 +16,7 @@ const sections = [
   { name: "Danh sách bán thành phẩm", icon: Boxes, href: "/" },
   { name: "Danh sách thành phẩm", icon: PackageCheck },
   { name: "Danh mục hàng hoá", icon: ClipboardList, href: "/items" },
+  { name: "Lịch sử kết nối", icon: Unplug, href: "/connection-history" },
   { name: "About", icon: Info, href: "/about" },
 ];
 

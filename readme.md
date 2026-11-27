@@ -67,3 +67,9 @@ Backend hỗ trợ `@RequireRoles(...)` và `@RequirePermissions(...)` trên con
 Swagger UI chạy tại `http://localhost:3000/api-docs`. Bản OpenAPI có tại `/api-docs-json` và `/api-docs-yaml`. Đăng nhập qua `POST /auth/login` rồi nhập `accessToken` vào nút **Authorize** để thử các API yêu cầu xác thực.
 
 Khi triển khai, đặt `ABOUT_API_REFERENCE_URL` trong môi trường frontend thành URL công khai của Swagger UI. Có thể đặt `SWAGGER_API_URL` nếu Swagger cần gửi yêu cầu đến một địa chỉ API khác.
+
+## Lịch sử kết nối
+
+Lịch sử ghi nhận từng tab trong khu vực sau đăng nhập. Tab gửi tín hiệu mỗi 20 giây. Phiên ngắt kết nối được nối lại trong 90 giây, hoặc tối đa 120 giây kể từ tín hiệu cuối nếu backend chưa nhận được sự kiện ngắt. Thời lượng phiên tính từ lần mở đến mốc kết nối cuối hoặc lúc đăng xuất, tùy trạng thái.
+
+Tài khoản xem lịch sử của mình. Quyền `users.list` mở rộng phạm vi sang toàn bộ người dùng. Khi triển khai qua reverse proxy, cấu hình `TRUST_PROXY` theo chuỗi proxy tin cậy để backend nhận đúng IP thiết bị.

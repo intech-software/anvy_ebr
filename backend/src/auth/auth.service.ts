@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { PrismaService } from '../prisma.service';
 import { AvatarStorage } from './avatar-storage.service';
@@ -35,7 +36,12 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return { accessToken: await this.jwt.signAsync({ sub: user.id }) };
+    return {
+      accessToken: await this.jwt.signAsync(
+        { sub: user.id },
+        { jwtid: randomUUID() },
+      ),
+    };
   }
 
   async getSessionUser(authorization?: string) {

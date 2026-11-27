@@ -5,6 +5,13 @@ import { setupSwagger } from './swagger/setup-swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const trustedProxy = process.env.TRUST_PROXY?.trim();
+  if (trustedProxy) {
+    app.set(
+      'trust proxy',
+      /^\d+$/.test(trustedProxy) ? Number(trustedProxy) : trustedProxy,
+    );
+  }
   setupSwagger(app);
   await app.listen(process.env.PORT ?? 3000);
 }

@@ -10,5 +10,6 @@ import { AccessControlService } from './access-control.service';
     AccessControlService,
     { provide: APP_GUARD, useClass: AccessControlGuard },
   ],
+  exports: [AccessControlService],
 })
 export class AccessControlModule {}

@@ -21,6 +21,7 @@ model Users {
   updated_at    DateTime    @default(now()) @updatedAt
   departmentObj Departments @relation(fields: [department], references: [name], onDelete: Restrict, onUpdate: Cascade, map: "users_department_fkey")
   userRoles     UserRoles[]
+  connectionLogins ConnectionLogins[]
 
   @@index([department], map: "users_department_fkey")
   @@map("users")
@@ -94,4 +95,36 @@ model RolePermissions {
   @@unique([role_id, permission_id])
   @@index([permission_id], map: "role_permissions_permission_id_idx")
   @@map("role_permissions")
+}
+
+model ConnectionLogins {
+  login_key String            @id @db.Char(64)
+  user_id   Int
+  ended_at  DateTime?
+  user      Users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  sessions  UserAppSessions[]
+
+  @@index([user_id])
+  @@map("connection_logins")
+}
+
+model UserAppSessions {
+  id                 Int              @id @default(autoincrement())
+  login_key          String           @db.Char(64)
+  client_session_id  String           @db.Char(36)
+  active_key         String?          @unique @db.VarChar(110)
+  connection_key     String           @db.Char(36)
+  connected_at       DateTime         @default(now())
+  last_seen_at       DateTime         @default(now())
+  disconnected_at    DateTime?
+  ended_at           DateTime?
+  connection_count   Int              @default(1)
+  ip_address         String?          @db.VarChar(45)
+  user_agent         String?          @db.VarChar(1000)
+  login              ConnectionLogins @relation(fields: [login_key], references: [login_key], onDelete: Cascade)
+
+  @@index([login_key, connected_at])
+  @@index([ended_at, last_seen_at])
+  @@index([connected_at, id])
+  @@map("user_app_sessions")
 }
