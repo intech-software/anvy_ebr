@@ -7,18 +7,24 @@ export const sessionCookie = "anvy_ebr_session";
 const sessionUserSchema = z.object({
   username: z.string(),
   name: z.string().nullable(),
+  email: z.string().nullable().default(null),
   position: z.string().nullable(),
   department: z.string(),
+  avatar: z.string().nullable(),
 });
 
 export type SessionUser = z.infer<typeof sessionUserSchema>;
 
-export function fetchAuth(path: "login" | "me" | "password", init?: RequestInit) {
+export function fetchAuth(path: "login" | "me" | "password" | "avatar", init?: RequestInit) {
+  return fetchBackend(`/auth/${path}`, init);
+}
+
+export function fetchBackend(path: string, init?: RequestInit) {
   const backend = process.env.AUTH_API_URL ?? "http://127.0.0.1:3000";
-  return fetch(new URL(`/auth/${path}`, backend), {
+  return fetch(new URL(path, backend), {
     ...init,
     cache: "no-store",
-    signal: AbortSignal.timeout(5000),
+    signal: init?.signal ?? AbortSignal.timeout(5000),
   });
 }
 

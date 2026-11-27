@@ -8,8 +8,12 @@ import {
   HttpCode,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
+import { maxAvatarBytes } from './avatar-storage.service';
 import { changePasswordSchema } from './change-password.schema';
 import { loginSchema } from './login.schema';
 
@@ -39,6 +43,23 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   me(@Headers('authorization') authorization?: string) {
     return this.auth.getSessionUser(authorization);
+  }
+
+  @Patch('avatar')
+  @HttpCode(204)
+  @Header('Cache-Control', 'no-store')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      // Multer rejects a file that reaches the parser limit.
+      limits: { fileSize: maxAvatarBytes + 1, files: 1, fields: 0 },
+    }),
+  )
+  updateAvatar(
+    @Headers('authorization') authorization: string | undefined,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!file?.size) throw new BadRequestException('Avatar image is required');
+    return this.auth.updateAvatar(authorization, file);
   }
 
   @Patch('password')

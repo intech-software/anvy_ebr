@@ -12,8 +12,11 @@ model Users {
   username      String      @unique
   password      String
   name          String?
+  email         String?     @unique
   position      String?
   department    String
+  avatar        String?     @db.VarChar(512)
+  avatar_public_id String?
   created_at    DateTime    @default(now())
   updated_at    DateTime    @default(now()) @updatedAt
   departmentObj Departments @relation(fields: [department], references: [name], onDelete: Restrict, onUpdate: Cascade, map: "users_department_fkey")
@@ -30,4 +33,13 @@ model Departments {
   users       Users[]
 
   @@map("departments")
+}
+
+model Items {
+  id        Int     @id @default(autoincrement())
+  item_code String  @unique
+  item_name String  @db.Text
+  unit      String?
+
+  @@map("items")
 }

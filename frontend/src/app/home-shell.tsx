@@ -1,12 +1,13 @@
 "use client";
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Bell, Boxes, Info, LogOut, PackageCheck, Search, User } from "lucide-react";
+import { Bell, Boxes, ClipboardList, Info, LogOut, PackageCheck, Search, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { MdDehaze } from "react-icons/md";
+import { UserAvatar } from "@/components/user-avatar";
 import type { SessionUser } from "@/lib/auth";
 import { version } from "../../package.json";
 import { logout } from "./home-actions";
@@ -14,6 +15,7 @@ import { logout } from "./home-actions";
 const sections = [
   { name: "Danh sách bán thành phẩm", icon: Boxes, href: "/" },
   { name: "Danh sách thành phẩm", icon: PackageCheck },
+  { name: "Danh mục hàng hoá", icon: ClipboardList, href: "/items" },
   { name: "About", icon: Info, href: "/about" },
 ];
 
@@ -33,9 +35,6 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
   );
   const displayName = user.name ?? user.username;
   const subtitle = [user.position, user.department].filter(Boolean).join(" · ");
-  const initials = user.name
-    ? user.name.split(/\s+/).slice(-2).map((word) => word[0]).join("")
-    : user.username.slice(0, 2);
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -66,7 +65,7 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
             alt="Logo Anvy"
             width={470}
             height={568}
-            className="h-10 w-auto"
+            className="h-5 w-auto"
           />
           <h1 className="hidden text-xl md:block">HỒ SƠ LÔ</h1>
         </div>
@@ -116,12 +115,7 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
                 </span>
                 <span className="max-w-full truncate text-xs text-gray-600">{subtitle}</span>
               </span>
-              <span
-                aria-hidden="true"
-                className="grid size-9 place-items-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800"
-              >
-                {initials.toLocaleUpperCase("vi")}
-              </span>
+              <UserAvatar user={user} className="size-9 text-sm" />
             </Dropdown.Trigger>
             <Dropdown.Portal>
               <Dropdown.Content align="end" sideOffset={8} className={dropdownPanel}>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { AvatarForm } from "./avatar-form";
 import { ChangePasswordForm } from "./change-password-form";
 
 export const metadata: Metadata = {
@@ -12,14 +13,12 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
 
   const displayName = user.name || user.username;
-  const initials = user.name
-    ? user.name.trim().split(/\s+/).slice(-2).map((part) => part[0]).join("")
-    : user.username.slice(0, 2);
   const details = [
     ["Tên nhân sự", user.name],
     ["Mã nhân viên", user.username],
     ["Bộ phận", user.department],
     ["Chức vụ", user.position],
+    ["Email", user.email],
   ];
 
   return (
@@ -32,12 +31,7 @@ export default async function ProfilePage() {
       </h1>
       <div className="grid flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <div className="flex flex-col items-center rounded-lg border border-gray-200 px-4 py-6 text-center shadow-sm">
-          <span
-            aria-hidden="true"
-            className="grid size-20 place-items-center rounded-full bg-blue-100 text-2xl font-semibold text-blue-800"
-          >
-            {initials.toLocaleUpperCase("vi")}
-          </span>
+          <AvatarForm user={user} />
           <p className="mt-4 text-xl font-semibold text-gray-900">{displayName}</p>
           <p className="mt-1 text-sm text-gray-600">{user.department}</p>
         </div>

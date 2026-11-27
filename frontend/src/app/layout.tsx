@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Anvy EBR",
   icons: {
-    icon: { url: "/brand/logo_anvy.svg", type: "image/svg+xml" },
+    icon: { url: "/brand/favicon-anvy.png", type: "image/png", sizes: "32x32" },
   },
 };
 

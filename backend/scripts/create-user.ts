@@ -1,11 +1,18 @@
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcrypt';
+import { z } from 'zod';
 import { loginSchema } from '../src/auth/login.schema';
 
 async function createUser() {
-  const [username, title, departmentName, fullName, departmentDescription] =
-    process.argv.slice(2);
+  const [
+    username,
+    title,
+    departmentName,
+    fullName,
+    departmentDescription,
+    emailInput,
+  ] = process.argv.slice(2);
   const credentials = loginSchema.safeParse({
     username,
     password: process.env.ANVY_USER_PASSWORD,
@@ -14,6 +21,7 @@ async function createUser() {
   const position = title?.trim() || null;
   const department = departmentName?.trim();
   const description = departmentDescription?.trim() || null;
+  const email = emailInput?.trim() || null;
 
   if (
     !credentials.success ||
@@ -24,6 +32,9 @@ async function createUser() {
     (description && description.length > 191)
   ) {
     throw new Error('Provide a valid username, password and department');
+  }
+  if (email && !z.email().max(191).safeParse(email).success) {
+    throw new Error('Provide a valid email address');
   }
 
   const password = await hash(credentials.data.password, 12);
@@ -40,6 +51,7 @@ async function createUser() {
           username: credentials.data.username,
           password,
           name,
+          email,
           position,
           department,
         },
@@ -53,7 +65,7 @@ async function createUser() {
 
 void createUser().catch((error: unknown) => {
   if (error instanceof Error && 'code' in error && error.code === 'P2002') {
-    console.error('Username already exists');
+    console.error('Username or email already exists');
   } else {
     console.error(error instanceof Error ? error.message : 'Could not create user');
   }

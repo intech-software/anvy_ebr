@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { z } from 'zod';
 import { PrismaService } from '../prisma.service';
+import { AvatarStorage } from './avatar-storage.service';
 import { changePasswordSchema } from './change-password.schema';
 import { loginSchema } from './login.schema';
 
@@ -20,6 +21,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly avatarStorage: AvatarStorage,
   ) {}
 
   async login({ username, password }: z.infer<typeof loginSchema>) {
@@ -40,13 +42,58 @@ export class AuthService {
     const id = await this.getSessionUserId(authorization);
     const user = await this.prisma.users.findUnique({
       where: { id },
-      select: { username: true, name: true, position: true, department: true },
+      select: {
+        username: true,
+        name: true,
+        email: true,
+        position: true,
+        department: true,
+        avatar: true,
+      },
     });
     if (!user) {
       throw new UnauthorizedException();
     }
 
     return user;
+  }
+
+  async updateAvatar(
+    authorization: string | undefined,
+    file: Express.Multer.File,
+  ): Promise<void> {
+    const id = await this.getSessionUserId(authorization);
+    const user = await this.prisma.users.findUnique({
+      where: { id },
+      select: { avatar_public_id: true },
+    });
+    if (!user) throw new UnauthorizedException();
+
+    const uploaded = await this.avatarStorage.upload(file);
+    const { count } = await this.prisma.users
+      .updateMany({
+        where: { id, avatar_public_id: user.avatar_public_id },
+        data: uploaded,
+      })
+      .catch(async (error: unknown) => {
+        const current = await this.prisma.users
+          .findUnique({ where: { id }, select: { avatar_public_id: true } })
+          .catch(() => undefined);
+        if (
+          current !== undefined &&
+          current?.avatar_public_id !== uploaded.avatar_public_id
+        ) {
+          await this.avatarStorage.remove(uploaded.avatar_public_id);
+        }
+        if (current?.avatar_public_id === uploaded.avatar_public_id)
+          return { count: 1 };
+        throw error;
+      });
+    if (count !== 1) {
+      await this.avatarStorage.remove(uploaded.avatar_public_id);
+      throw new ConflictException('The avatar was already changed');
+    }
+    await this.avatarStorage.remove(user.avatar_public_id);
   }
 
   async changePassword(

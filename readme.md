@@ -23,6 +23,8 @@ npm.cmd run start:dev
 
 Nếu chưa có `backend/.env`, sao chép `.env.example` thành `.env` trước khi chạy migration. Điền `DATABASE_URL` cho database và đặt `JWT_SECRET` ngẫu nhiên. Có thể tạo giá trị cho `JWT_SECRET` bằng lệnh `node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"`.
 
+Ảnh đại diện trong Hồ sơ cá nhân được lưu trên Cloudinary tại `anvy/avt`. Cấu hình `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` và `CLOUDINARY_API_SECRET` trong `backend/.env`.
+
 **Frontend**
 
 ```powershell
@@ -35,14 +37,14 @@ Mở `http://localhost:3002/login`. Sau khi đăng nhập thành công, trình d
 
 ## Tạo tài khoản
 
-Bảng `users` lưu tên đăng nhập duy nhất, mật khẩu băm bằng bcrypt, họ tên, chức danh và phòng ban. Cột `users.department` tham chiếu `departments.name`. Lệnh dưới đây tái sử dụng phòng ban đã có hoặc tạo phòng ban mới cùng với tài khoản. Họ tên và mô tả phòng ban có thể truyền sau tên phòng ban.
+Bảng `users` lưu tên đăng nhập duy nhất, mật khẩu băm bằng bcrypt, họ tên, email, chức danh và phòng ban. Cột `users.department` tham chiếu `departments.name`. Lệnh dưới đây tái sử dụng phòng ban đã có hoặc tạo phòng ban mới cùng với tài khoản. Có thể truyền họ tên, mô tả phòng ban và email theo thứ tự sau tên phòng ban.
 
 ```powershell
 cd backend
 $password = Read-Host 'Mật khẩu tài khoản' -AsSecureString
 $env:ANVY_USER_PASSWORD = [System.Net.NetworkCredential]::new('', $password).Password
 try {
-  npm.cmd run user:create -- anvy.user 'Nhân viên' 'Hành chính' 'Nguyễn Văn An'
+  npm.cmd run user:create -- anvy.user 'Nhân viên' 'Hành chính' 'Nguyễn Văn An' 'Bộ phận hành chính' 'an@example.com'
 } finally {
   Remove-Item Env:ANVY_USER_PASSWORD
 }
