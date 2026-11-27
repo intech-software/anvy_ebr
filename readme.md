@@ -55,3 +55,9 @@ try {
 - Chạy `npm.cmd run build` và `npm.cmd run lint` trong từng thư mục.
 - Chạy `npm.cmd test` trong `backend/` để kiểm thử.
 - Không đưa mật khẩu, khóa API hoặc thông tin nhạy cảm vào kho mã nguồn.
+
+## Phân quyền
+
+Người dùng nhận quyền qua các vai trò được gán. Các bảng `roles`, `permissions`, `user_roles` và `role_permissions` lưu vai trò, quyền và các liên kết tương ứng. Migration chỉ tạo cấu trúc bảng.
+
+Backend hỗ trợ `@RequireRoles(...)` và `@RequirePermissions(...)` trên controller hoặc handler. Người dùng phải đáp ứng tất cả yêu cầu đã khai báo ở cả hai cấp. Guard đọc quyền từ database khi xử lý yêu cầu để phản ánh thay đổi gán quyền.

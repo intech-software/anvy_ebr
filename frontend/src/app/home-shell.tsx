@@ -5,7 +5,7 @@ import { Bell, Boxes, ClipboardList, Info, LogOut, PackageCheck, Search, User } 
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { MdDehaze } from "react-icons/md";
 import { UserAvatar } from "@/components/user-avatar";
 import type { SessionUser } from "@/lib/auth";
@@ -29,6 +29,7 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const searchInput = useRef<HTMLInputElement>(null);
   const filter = query.trim().toLocaleLowerCase("vi");
   const visibleSections = sections.filter(({ name }) =>
     name.toLocaleLowerCase("vi").includes(filter),
@@ -71,12 +72,13 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
         </div>
 
         <div className="flex min-w-0 items-center gap-1 sm:gap-3">
-          <label className="relative min-w-0">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-gray-500"
-            />
+          <div
+            role="search"
+            aria-label="Tìm trong menu"
+            className="group relative h-9 w-9 min-w-0 rounded-full border border-gray-200 transition-[width] duration-300 ease-in-out focus-within:w-40 focus-within:border-blue-600 motion-reduce:transition-none md:w-40 md:focus-within:w-100"
+          >
             <input
+              ref={searchInput}
               type="search"
               aria-label="Tìm mục trong menu"
               placeholder="Tìm kiếm"
@@ -86,9 +88,17 @@ export function HomeShell({ user, children }: { user: SessionUser; children: Rea
                 setMobileOpen(true);
                 setDesktopOpen(true);
               }}
-              className="h-9 w-full rounded-full border border-gray-200 pl-9 pr-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-600 sm:w-40"
+              className="size-full min-w-0 rounded-full pl-3 pr-9 text-sm text-transparent outline-none placeholder:text-transparent group-focus-within:text-gray-900 group-focus-within:placeholder:text-gray-500 md:text-gray-900 md:placeholder:text-gray-500"
             />
-          </label>
+            <button
+              type="button"
+              aria-label="Tìm kiếm"
+              onClick={() => searchInput.current?.focus()}
+              className="absolute inset-y-0 right-0 grid w-9 place-items-center rounded-full text-gray-500 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-blue-600"
+            >
+              <Search aria-hidden="true" className="size-4" />
+            </button>
+          </div>
           <Dropdown.Root>
             <Dropdown.Trigger aria-label="Thông báo" className={iconButton}>
               <Bell size={20} />

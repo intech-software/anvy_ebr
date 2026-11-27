@@ -20,6 +20,7 @@ model Users {
   created_at    DateTime    @default(now())
   updated_at    DateTime    @default(now()) @updatedAt
   departmentObj Departments @relation(fields: [department], references: [name], onDelete: Restrict, onUpdate: Cascade, map: "users_department_fkey")
+  userRoles     UserRoles[]
 
   @@index([department], map: "users_department_fkey")
   @@map("users")
@@ -42,4 +43,55 @@ model Items {
   unit      String?
 
   @@map("items")
+}
+
+model Roles {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  description     String?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @default(now()) @updatedAt
+  userRoles       UserRoles[]
+  rolePermissions RolePermissions[]
+
+  @@map("roles")
+}
+
+model Permissions {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  description     String?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @default(now()) @updatedAt
+  rolePermissions RolePermissions[]
+
+  @@map("permissions")
+}
+
+model UserRoles {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  role_id    Int
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       Roles    @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
+  @@index([role_id], map: "user_roles_role_id_idx")
+  @@map("user_roles")
+}
+
+model RolePermissions {
+  id            Int         @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now()) @updatedAt
+  role          Roles       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    Permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+  @@index([permission_id], map: "role_permissions_permission_id_idx")
+  @@map("role_permissions")
 }

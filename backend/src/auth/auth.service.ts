@@ -122,7 +122,7 @@ export class AuthService {
     }
   }
 
-  private async getSessionUserId(authorization?: string): Promise<number> {
+  async getSessionUserId(authorization?: string): Promise<number> {
     const token = authorization?.match(/^Bearer (\S+)$/i)?.[1];
     if (!token) {
       throw new UnauthorizedException();

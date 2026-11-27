@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronRight, Plus, Search, SlidersHorizontal, SquarePen, X } from "lucide-react";
+import { ChevronRight, Plus, SquarePen, X } from "lucide-react";
 import Link from "next/link";
 import { fetchItems, itemListSchema, itemSchema } from "@/lib/items";
 import { ItemForm } from "./item-form";
@@ -8,7 +8,6 @@ export const metadata: Metadata = { title: "Danh mục hàng hoá | Anvy EBR" };
 
 const buttonClass =
   "inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50";
-const filterClass = "rounded-md border border-gray-300 px-2 py-1.5 text-sm";
 
 export default async function ItemsPage({
   searchParams,
@@ -16,8 +15,6 @@ export default async function ItemsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const q = typeof params.q === "string" ? params.q.trim().slice(0, 191) : "";
-  const unit = typeof params.unit === "string" ? params.unit.trim().slice(0, 191) : "";
   const rawPage = typeof params.page === "string" ? Number(params.page) : 1;
   const page = Number.isInteger(rawPage) && rawPage >= 1 && rawPage <= 42_949_672 ? rawPage : 1;
   const rawId = typeof params.item === "string" ? Number(params.item) : 0;
@@ -27,21 +24,16 @@ export default async function ItemsPage({
     : null;
   const showDetails = creating || selectedId !== null;
   const editing = params.view === "edit";
-  const filters = new URLSearchParams({ page: String(page) });
-  if (q) filters.set("q", q);
-  if (unit) filters.set("unit", unit);
-
   function href({ id, view, listPage = page }: { id?: number; view?: string; listPage?: number } = {}) {
-    const query = new URLSearchParams(filters);
-    if (listPage === 1) query.delete("page");
-    else query.set("page", String(listPage));
+    const query = new URLSearchParams();
+    if (listPage > 1) query.set("page", String(listPage));
     if (id !== undefined) query.set("item", String(id));
     if (view) query.set("view", view);
     return query.size ? `/items?${query}` : "/items";
   }
 
   const [listResponse, itemResponse] = await Promise.all([
-    fetchItems(`?${filters}`),
+    fetchItems(page === 1 ? "" : `?page=${page}`),
     selectedId === null ? null : fetchItems(`/${selectedId}`),
   ]);
   const list = itemListSchema.safeParse(
@@ -57,33 +49,15 @@ export default async function ItemsPage({
       className={`m-2 grid min-h-[calc(100%_-_1rem)] content-start overflow-clip rounded-lg bg-white shadow-sm ${showDetails ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]" : ""}`}
     >
       <div className={`min-w-0 ${showDetails ? "hidden border-gray-200 lg:block lg:border-r" : ""}`}>
-        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h1 className="flex items-center gap-2 font-medium">
-              <ChevronRight aria-hidden="true" size={16} />
-              Danh mục hàng hoá
-            </h1>
-            <Link href={href({ view: "new" })} className={buttonClass}>
-              <Plus aria-hidden="true" size={16} />
-              Thêm hàng hoá
-            </Link>
-          </div>
-
-          <form key={JSON.stringify([q, unit])} action="/items" className="mt-2 flex flex-wrap items-end gap-2">
-            <label className="flex min-w-36 flex-1 flex-col gap-1 text-xs text-gray-600">
-              Tìm theo mã hoặc tên
-              <input type="search" name="q" defaultValue={q} maxLength={191} className={filterClass} />
-            </label>
-            <label className="flex min-w-28 flex-1 flex-col gap-1 text-xs text-gray-600">
-              Đơn vị tính
-              <input name="unit" defaultValue={unit} maxLength={191} className={filterClass} />
-            </label>
-            <button type="submit" className={buttonClass}>
-              {q || unit ? <SlidersHorizontal aria-hidden="true" size={16} /> : <Search aria-hidden="true" size={16} />}
-              Lọc dữ liệu
-            </button>
-            {(q || unit) && <Link href="/items" className={buttonClass}>Xoá bộ lọc</Link>}
-          </form>
+        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 bg-white p-2">
+          <h1 className="flex items-center gap-2 font-medium">
+            <ChevronRight aria-hidden="true" size={16} />
+            Danh mục hàng hoá
+          </h1>
+          <Link href={href({ view: "new" })} className={buttonClass}>
+            <Plus aria-hidden="true" size={16} />
+            Thêm hàng hoá
+          </Link>
         </div>
 
         {!list.success ? (
@@ -111,9 +85,7 @@ export default async function ItemsPage({
                 ))}
               </ul>
             ) : (
-              <p className="p-4 text-center text-sm text-gray-600">
-                {q || unit ? "Không tìm thấy hàng hoá phù hợp." : "Chưa có hàng hoá nào."}
-              </p>
+              <p className="p-4 text-center text-sm text-gray-600">Chưa có hàng hoá nào.</p>
             )}
             {(page > 1 || list.data.hasMore) && (
               <nav aria-label="Phân trang hàng hoá" className="flex items-center justify-end gap-3 p-2">
