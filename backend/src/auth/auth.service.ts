@@ -1,8 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { z } from 'zod';
 import { PrismaService } from '../prisma.service';
+import { changePasswordSchema } from './change-password.schema';
 import { loginSchema } from './login.schema';
 
 // Run bcrypt for unknown usernames too, so failures take comparable time.
@@ -30,7 +36,46 @@ export class AuthService {
     return { accessToken: await this.jwt.signAsync({ sub: user.id }) };
   }
 
-  async verifySession(authorization?: string): Promise<void> {
+  async getSessionUser(authorization?: string) {
+    const id = await this.getSessionUserId(authorization);
+    const user = await this.prisma.users.findUnique({
+      where: { id },
+      select: { username: true, name: true, position: true, department: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return user;
+  }
+
+  async changePassword(
+    authorization: string | undefined,
+    { currentPassword, newPassword }: z.infer<typeof changePasswordSchema>,
+  ): Promise<void> {
+    const id = await this.getSessionUserId(authorization);
+    const user = await this.prisma.users.findUnique({
+      where: { id },
+      select: { password: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    if (!(await compare(currentPassword, user.password))) {
+      throw new UnprocessableEntityException('Incorrect current password');
+    }
+
+    const password = await hash(newPassword, 12);
+    const { count } = await this.prisma.users.updateMany({
+      where: { id, password: user.password },
+      data: { password },
+    });
+    if (count !== 1) {
+      throw new ConflictException('The password was already changed');
+    }
+  }
+
+  private async getSessionUserId(authorization?: string): Promise<number> {
     const token = authorization?.match(/^Bearer (\S+)$/i)?.[1];
     if (!token) {
       throw new UnauthorizedException();
@@ -48,12 +93,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const user = await this.prisma.users.findUnique({
-      where: { id: payload.sub },
-      select: { id: true },
-    });
-    if (!user) {
-      throw new UnauthorizedException();
-    }
+    return payload.sub;
   }
 }

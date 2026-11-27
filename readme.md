@@ -31,18 +31,18 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Mở `http://localhost:3002/login`. Sau khi đăng nhập thành công, trình duyệt chuyển đến trang trắng tại `/`. Nếu đổi địa chỉ backend, đặt `AUTH_API_URL` trong `frontend/.env.local` theo `.env.example`. Khi phục vụ frontend qua HTTPS, đặt `AUTH_COOKIE_SECURE=true`.
+Mở `http://localhost:3002/login`. Sau khi đăng nhập thành công, trình duyệt chuyển đến trang Hồ sơ lô tại `/`, có thanh điều hướng và menu tài khoản. Nếu đổi địa chỉ backend, đặt `AUTH_API_URL` trong `frontend/.env.local` theo `.env.example`. Khi phục vụ frontend qua HTTPS, đặt `AUTH_COOKIE_SECURE=true`.
 
 ## Tạo tài khoản
 
-Bảng `users` lưu tên đăng nhập duy nhất, mật khẩu băm bằng bcrypt, chức danh và phòng ban. Cột `users.department` tham chiếu `departments.name`. Lệnh dưới đây tái sử dụng phòng ban đã có hoặc tạo phòng ban mới cùng với tài khoản.
+Bảng `users` lưu tên đăng nhập duy nhất, mật khẩu băm bằng bcrypt, họ tên, chức danh và phòng ban. Cột `users.department` tham chiếu `departments.name`. Lệnh dưới đây tái sử dụng phòng ban đã có hoặc tạo phòng ban mới cùng với tài khoản. Họ tên và mô tả phòng ban có thể truyền sau tên phòng ban.
 
 ```powershell
 cd backend
 $password = Read-Host 'Mật khẩu tài khoản' -AsSecureString
 $env:ANVY_USER_PASSWORD = [System.Net.NetworkCredential]::new('', $password).Password
 try {
-  npm.cmd run user:create -- anvy.user 'Nhân viên' 'Hành chính'
+  npm.cmd run user:create -- anvy.user 'Nhân viên' 'Hành chính' 'Nguyễn Văn An'
 } finally {
   Remove-Item Env:ANVY_USER_PASSWORD
 }

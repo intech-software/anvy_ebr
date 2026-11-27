@@ -6,9 +6,11 @@ import {
   Header,
   Headers,
   HttpCode,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { changePasswordSchema } from './change-password.schema';
 import { loginSchema } from './login.schema';
 
 @Controller('auth')
@@ -29,7 +31,27 @@ export class AuthController {
   @Get('session')
   @HttpCode(204)
   @Header('Cache-Control', 'no-store')
-  session(@Headers('authorization') authorization?: string) {
-    return this.auth.verifySession(authorization);
+  async session(@Headers('authorization') authorization?: string) {
+    await this.auth.getSessionUser(authorization);
+  }
+
+  @Get('me')
+  @Header('Cache-Control', 'no-store')
+  me(@Headers('authorization') authorization?: string) {
+    return this.auth.getSessionUser(authorization);
+  }
+
+  @Patch('password')
+  @HttpCode(204)
+  @Header('Cache-Control', 'no-store')
+  changePassword(
+    @Headers('authorization') authorization: string | undefined,
+    @Body() body: unknown,
+  ) {
+    const passwords = changePasswordSchema.safeParse(body);
+    if (!passwords.success) {
+      throw new BadRequestException('Invalid password format');
+    }
+    return this.auth.changePassword(authorization, passwords.data);
   }
 }

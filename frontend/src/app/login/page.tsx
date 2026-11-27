@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { hasSession } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage() {
-  if (await hasSession()) redirect("/");
+  if (await getSessionUser()) redirect("/");
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
@@ -20,6 +20,18 @@ export default async function LoginPage() {
           Đăng nhập Anvy EBR
         </h1>
         <LoginForm />
+        <div className="mt-4 text-center">
+          <p>
+            Bạn chưa có tài khoản?{" "}
+            <span className="text-blue-600">Đăng ký</span>
+          </p>
+          <p className="text-blue-600">Lấy lại mật khẩu</p>
+          <p className="mt-4 text-sm text-slate-500">
+            Đăng nhập đồng nghĩa với đã đồng ý{" "}
+            <span className="text-blue-600">Điều khoản và chính sách</span>{" "}
+            của chúng tôi
+          </p>
+        </div>
       </section>
     </main>
   );
