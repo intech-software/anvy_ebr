@@ -6,6 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "user:create": "ts-node scripts/create-user.ts",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",

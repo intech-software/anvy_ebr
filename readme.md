@@ -4,20 +4,24 @@ Kho mã nguồn dự án Anvy EBR.
 
 ## Cấu trúc thư mục
 
-- `backend/` — NestJS 11. API kiểm tra trạng thái tại `GET /`, cổng mặc định `3000`.
-- `frontend/` — Next.js 16.1.1 với App Router và Tailwind CSS, cổng `3002`.
+- `backend/` — NestJS 11, Prisma và MariaDB. API chạy trên cổng `3000`.
+- `frontend/` — Next.js 16.1.1 với App Router và Tailwind CSS. Màn hình đăng nhập chạy trên cổng `3002`.
 
 ## Cài đặt và chạy
 
-Dùng Node.js 22.13 trở lên trong nhánh Node 22 và npm. Chạy các lệnh sau từ thư mục gốc của kho mã nguồn trong hai cửa sổ terminal.
+Dùng Node.js 22.13 trở lên trong nhánh Node 22, npm và một database MariaDB hoặc MySQL tên `anvy`. Chạy các lệnh sau từ thư mục gốc của kho mã nguồn trong hai cửa sổ terminal.
 
 **Backend**
 
 ```powershell
 cd backend
 npm.cmd ci
+npm.cmd run db:generate
+npm.cmd run db:migrate
 npm.cmd run start:dev
 ```
+
+Nếu chưa có `backend/.env`, sao chép `.env.example` thành `.env` trước khi chạy migration. Điền `DATABASE_URL` cho database và đặt `JWT_SECRET` ngẫu nhiên. Có thể tạo giá trị cho `JWT_SECRET` bằng lệnh `node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"`.
 
 **Frontend**
 
@@ -27,7 +31,22 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Mở `http://localhost:3002` để xem frontend và `http://localhost:3000` để kiểm tra backend.
+Mở `http://localhost:3002/login`. Sau khi đăng nhập thành công, trình duyệt chuyển đến trang trắng tại `/`. Nếu đổi địa chỉ backend, đặt `AUTH_API_URL` trong `frontend/.env.local` theo `.env.example`. Khi phục vụ frontend qua HTTPS, đặt `AUTH_COOKIE_SECURE=true`.
+
+## Tạo tài khoản
+
+Bảng `users` lưu tên đăng nhập duy nhất, mật khẩu băm bằng bcrypt, chức danh và phòng ban. Cột `users.department` tham chiếu `departments.name`. Lệnh dưới đây tái sử dụng phòng ban đã có hoặc tạo phòng ban mới cùng với tài khoản.
+
+```powershell
+cd backend
+$password = Read-Host 'Mật khẩu tài khoản' -AsSecureString
+$env:ANVY_USER_PASSWORD = [System.Net.NetworkCredential]::new('', $password).Password
+try {
+  npm.cmd run user:create -- anvy.user 'Nhân viên' 'Hành chính'
+} finally {
+  Remove-Item Env:ANVY_USER_PASSWORD
+}
+```
 
 ## Phát triển
 

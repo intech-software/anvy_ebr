@@ -1,7 +1,10 @@
-export default function Home() {
-  return (
-    <main className="p-8">
-      <h1 className="text-3xl font-semibold">Anvy EBR</h1>
-    </main>
-  );
+import { redirect } from "next/navigation";
+import { hasSession } from "@/lib/auth";
+
+export default async function Home() {
+  if (!(await hasSession())) {
+    redirect("/login");
+  }
+
+  return null;
 }
