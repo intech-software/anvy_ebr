@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Header,
+  Headers,
   Param,
   ParseIntPipe,
   Patch,
@@ -26,6 +27,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { z } from 'zod';
+import { AuthService } from '../auth/auth.service';
 import {
   ItemListResponse,
   ItemRequest,
@@ -63,7 +65,10 @@ const itemSchema = z.object({
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ description: 'Phiên đăng nhập không hợp lệ.' })
 export class ItemsController {
-  constructor(private readonly items: ItemsService) {}
+  constructor(
+    private readonly items: ItemsService,
+    private readonly auth: AuthService,
+  ) {}
 
   @Get()
   @Header('Cache-Control', 'no-store')
@@ -112,10 +117,16 @@ export class ItemsController {
   @ApiCreatedResponse({ type: ItemResponse })
   @ApiBadRequestResponse({ description: 'Dữ liệu hàng hoá không hợp lệ.' })
   @ApiConflictResponse({ description: 'Mã hàng đã tồn tại.' })
-  create(@Body() body: unknown) {
+  async create(
+    @Body() body: unknown,
+    @Headers('authorization') authorization?: string,
+  ) {
     const item = itemSchema.safeParse(body);
     if (!item.success) throw new BadRequestException('Invalid item');
-    return this.items.save(item.data);
+    return this.items.save(
+      await this.auth.getSessionUserId(authorization),
+      item.data,
+    );
   }
 
   @Patch(':id')
@@ -129,9 +140,17 @@ export class ItemsController {
   })
   @ApiNotFoundResponse({ description: 'Không tìm thấy hàng hoá.' })
   @ApiConflictResponse({ description: 'Mã hàng đã tồn tại.' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() body: unknown) {
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Headers('authorization') authorization?: string,
+  ) {
     const item = itemSchema.safeParse(body);
     if (!item.success) throw new BadRequestException('Invalid item');
-    return this.items.save(item.data, id);
+    return this.items.save(
+      await this.auth.getSessionUserId(authorization),
+      item.data,
+      id,
+    );
   }
 }

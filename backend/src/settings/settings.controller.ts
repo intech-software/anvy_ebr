@@ -47,10 +47,10 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Body() body: unknown,
   ) {
-    await this.auth.getSessionUser(authorization);
+    const actorId = await this.auth.getSessionUserId(authorization);
     const data = departmentSchema.safeParse(body);
     if (!data.success) throw new BadRequestException('Invalid department data');
-    return this.settings.createDepartment(data.data);
+    return this.settings.createDepartment(actorId, data.data);
   }
 
   @Post('users')
@@ -84,9 +84,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Body() body: unknown,
   ) {
-    await this.auth.getSessionUser(authorization);
+    const actorId = await this.auth.getSessionUserId(authorization);
     const data = newUserSchema.safeParse(body);
     if (!data.success) throw new BadRequestException('Invalid user data');
-    return this.settings.createUser(data.data);
+    return this.settings.createUser(actorId, data.data);
   }
 }

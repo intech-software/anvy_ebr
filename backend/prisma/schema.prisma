@@ -7,6 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model AuditLogs {
+  id          BigInt      @id @default(autoincrement())
+  entity_type String      @db.VarChar(100)
+  entity_id   String
+  entity_name String?     @db.VarChar(255)
+  action      AuditAction
+  old_values  Json?
+  new_values  Json?
+  actor_id    Int
+  actor_name  String?     @db.VarChar(255)
+  reason      String?     @db.Text
+  created_at  DateTime    @default(now())
+
+  @@index([created_at, id])
+  @@index([actor_id, created_at, id])
+  @@index([entity_type, created_at, id])
+  @@map("audit_logs")
+}
+
 model Users {
   id            Int         @id @default(autoincrement())
   username      String      @unique

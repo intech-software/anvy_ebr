@@ -3,7 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, type Items } from '@prisma/client';
+import { writeAuditLog } from '../audit-logs/write-audit-log';
 import { PrismaService } from '../prisma.service';
 
 export const itemPageSize = 50;
@@ -44,15 +45,50 @@ export class ItemsService {
     return item;
   }
 
-  async save(data: Prisma.ItemsCreateInput, id?: number) {
+  async save(actorId: number, data: Prisma.ItemsCreateInput, id?: number) {
+    if (
+      id !== undefined &&
+      (!Number.isSafeInteger(id) || id < 1 || id > 2147483647)
+    ) {
+      throw new NotFoundException('Item not found');
+    }
     try {
-      if (id === undefined) {
-        return await this.prisma.items.create({ data });
-      }
-      if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) {
-        throw new NotFoundException('Item not found');
-      }
-      return await this.prisma.items.update({ where: { id }, data });
+      return await this.prisma.$transaction(async (tx) => {
+        if (id === undefined) {
+          const item = await tx.items.create({ data });
+          await writeAuditLog(tx, {
+            actorId,
+            entityType: 'items',
+            entityId: item.id,
+            entityName: item.item_name,
+            action: 'CREATE',
+            newValues: item,
+          });
+          return item;
+        }
+
+        const [previous] = await tx.$queryRaw<Items[]>`
+          SELECT id, item_code, item_name, unit FROM items WHERE id = ${id} FOR UPDATE
+        `;
+        if (!previous) throw new NotFoundException('Item not found');
+        const item = await tx.items.update({ where: { id }, data });
+        if (
+          previous.item_code !== item.item_code ||
+          previous.item_name !== item.item_name ||
+          previous.unit !== item.unit
+        ) {
+          await writeAuditLog(tx, {
+            actorId,
+            entityType: 'items',
+            entityId: item.id,
+            entityName: item.item_name,
+            action: 'UPDATE',
+            oldValues: previous,
+            newValues: item,
+          });
+        }
+        return item;
+      });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002')

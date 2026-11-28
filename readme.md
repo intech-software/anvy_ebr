@@ -77,3 +77,9 @@ Tài khoản xem lịch sử của mình. Quyền `users.list` mở rộng phạ
 ## Cài đặt
 
 Mọi tài khoản đã đăng nhập đều có thể mở **Cài đặt** trong menu tài khoản để thêm người dùng và phòng ban.
+
+## Lịch sử thay đổi
+
+Menu **Lịch sử thay đổi** ghi nhận các thao tác tạo và sửa hàng hoá, thêm người dùng, thêm phòng ban, đổi ảnh đại diện và đổi mật khẩu qua API. Dữ liệu trước và sau được ghi cùng giao dịch cập nhật. Khi đổi mật khẩu, nhật ký chỉ ghi loại thao tác.
+
+Tài khoản xem các thao tác do mình thực hiện. Quyền `permissions.list` cho phép xem toàn bộ nhật ký.

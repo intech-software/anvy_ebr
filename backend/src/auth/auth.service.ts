@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { writeAuditLog } from '../audit-logs/write-audit-log';
 import { PrismaService } from '../prisma.service';
 import { AvatarStorage } from './avatar-storage.service';
 import { changePasswordSchema } from './change-password.schema';
@@ -71,15 +72,35 @@ export class AuthService {
     const id = await this.getSessionUserId(authorization);
     const user = await this.prisma.users.findUnique({
       where: { id },
-      select: { avatar_public_id: true },
+      select: {
+        avatar: true,
+        avatar_public_id: true,
+        name: true,
+        username: true,
+      },
     });
     if (!user) throw new UnauthorizedException();
 
     const uploaded = await this.avatarStorage.upload(file);
-    const { count } = await this.prisma.users
-      .updateMany({
-        where: { id, avatar_public_id: user.avatar_public_id },
-        data: uploaded,
+    const { count } = await this.prisma
+      .$transaction(async (tx) => {
+        const result = await tx.users.updateMany({
+          where: { id, avatar_public_id: user.avatar_public_id },
+          data: uploaded,
+        });
+        if (result.count) {
+          await writeAuditLog(tx, {
+            actorId: id,
+            entityType: 'users',
+            entityId: id,
+            entityName: user.name || user.username,
+            action: 'UPDATE',
+            oldValues: { avatar: user.avatar },
+            newValues: { avatar: uploaded.avatar },
+            reason: 'Đổi ảnh đại diện',
+          });
+        }
+        return result;
       })
       .catch(async (error: unknown) => {
         const current = await this.prisma.users
@@ -109,7 +130,7 @@ export class AuthService {
     const id = await this.getSessionUserId(authorization);
     const user = await this.prisma.users.findUnique({
       where: { id },
-      select: { password: true },
+      select: { password: true, name: true, username: true },
     });
     if (!user) {
       throw new UnauthorizedException();
@@ -119,13 +140,22 @@ export class AuthService {
     }
 
     const password = await hash(newPassword, 12);
-    const { count } = await this.prisma.users.updateMany({
-      where: { id, password: user.password },
-      data: { password },
+    await this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.users.updateMany({
+        where: { id, password: user.password },
+        data: { password },
+      });
+      if (count !== 1)
+        throw new ConflictException('The password was already changed');
+      await writeAuditLog(tx, {
+        actorId: id,
+        entityType: 'users',
+        entityId: id,
+        entityName: user.name || user.username,
+        action: 'UPDATE',
+        reason: 'Đổi mật khẩu',
+      });
     });
-    if (count !== 1) {
-      throw new ConflictException('The password was already changed');
-    }
   }
 
   async getSessionUserId(authorization?: string): Promise<number> {
