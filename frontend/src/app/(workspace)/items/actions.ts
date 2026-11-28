@@ -1,9 +1,10 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { fetchItems, itemSchema } from "@/lib/items";
 
-export async function saveItem(id: number | null, _previous: string, formData: FormData) {
+export async function saveItem(id: number | null, formData: FormData) {
   const response = await fetchItems(id === null ? "" : `/${id}`, {
     method: id === null ? "POST" : "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -21,5 +22,9 @@ export async function saveItem(id: number | null, _previous: string, formData: F
 
   const result = itemSchema.safeParse(await response.json().catch(() => null));
   if (!result.success) return "Không thể xác nhận hàng hoá đã lưu.";
+  if (id === null) {
+    refresh();
+    return "";
+  }
   redirect(`/items?item=${result.data.id}`);
 }

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { ChevronRight, Plus, SquarePen, X } from "lucide-react";
+import { ChevronRight, SquarePen, X } from "lucide-react";
 import Link from "next/link";
 import { fetchItems, itemListSchema, itemSchema } from "@/lib/items";
 import { ItemForm } from "./item-form";
+import { AddItemDialog } from "./add-item-dialog";
 
 export const metadata: Metadata = { title: "Danh mục hàng hoá | Anvy EBR" };
 
@@ -22,7 +23,7 @@ export default async function ItemsPage({
   const selectedId = !creating && Number.isInteger(rawId) && rawId > 0 && rawId <= 2_147_483_647
     ? rawId
     : null;
-  const showDetails = creating || selectedId !== null;
+  const showDetails = selectedId !== null;
   const editing = params.view === "edit";
   function href({ id, view, listPage = page }: { id?: number; view?: string; listPage?: number } = {}) {
     const query = new URLSearchParams();
@@ -54,10 +55,7 @@ export default async function ItemsPage({
             <ChevronRight aria-hidden="true" size={16} />
             Danh mục hàng hoá
           </h1>
-          <Link href={href({ view: "new" })} className={buttonClass}>
-            <Plus aria-hidden="true" size={16} />
-            Thêm hàng hoá
-          </Link>
+          <AddItemDialog key={creating ? "new" : "list"} initialOpen={creating} closeHref={closeHref} />
         </div>
 
         {!list.success ? (
@@ -102,7 +100,7 @@ export default async function ItemsPage({
         <section aria-label="Chi tiết hàng hoá" className="min-w-0 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-2">
             <h2 className="wrap-break-word font-semibold">
-              {creating ? "Thêm hàng hoá" : editing ? "Sửa hàng hoá" : selected?.item_code ?? "Chi tiết hàng hoá"}
+              {editing ? "Sửa hàng hoá" : selected?.item_code ?? "Chi tiết hàng hoá"}
             </h2>
             <div className="flex gap-2">
               {selected && !editing && (
@@ -116,9 +114,7 @@ export default async function ItemsPage({
             </div>
           </div>
 
-          {creating ? (
-            <ItemForm key="new" cancelHref={closeHref} />
-          ) : selected ? (
+          {selected ? (
             editing ? (
               <ItemForm key={selected.id} item={selected} cancelHref={href({ id: selected.id })} />
             ) : (
